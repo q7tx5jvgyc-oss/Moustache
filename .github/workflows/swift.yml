@@ -1,4 +1,4 @@
-name: Build Dylib
+name: Swift Dylib Build
 
 on:
   push:
@@ -16,11 +16,7 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app
 
-      - name: Install dependencies (if needed)
-        run: |
-          echo "No dependencies step (add pods or brew if needed)"
-
-      - name: Build project as Dynamic Library
+      - name: Build dylib (Release)
         run: |
           xcodebuild \
             -scheme YourScheme \
@@ -28,19 +24,18 @@ jobs:
             -sdk iphoneos \
             BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
             SKIP_INSTALL=NO \
-            ONLY_ACTIVE_ARCH=NO \
             BUILD_DIR=build
 
       - name: Collect dylib
         run: |
           mkdir -p output
-          find build -type f -name "*.dylib" -exec cp {} output/ \;
+          find build -name "*.dylib" -exec cp {} output/ \;
 
-      - name: Show output files
+      - name: Verify output
         run: ls -R output
 
-      - name: Upload dylib artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dylib-build
+          name: moustache-dylib
           path: output/
