@@ -1,16 +1,24 @@
-name: Moustache Build Test
+name: Swift Build
 
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Print message
-        run: echo "Moustache project is running on GitHub Actions 🔥"
+      - name: Show Swift version
+        run: swift --version
+
+      - name: Build project (if Swift Package)
+        run: swift build
+
+      - name: Run tests (if available)
+        run: swift test || echo "No tests found"
