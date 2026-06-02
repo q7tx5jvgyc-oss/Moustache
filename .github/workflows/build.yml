@@ -1,14 +1,66 @@
-      - name: Collect output
+name: Build + Extract dylib
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install Theos
         run: |
-          mkdir -p output
-          find . -name "*.deb" -exec cp {} output/ \; || true
-          find . -name "*.dylib" -exec cp {} output/ \; || true
+          git clone --recursive https://github.com/theos/theos.git $HOME/theos
+          echo "THEOS=$HOME/theos" >> $GITHUB_ENV
+          echo "PATH=$HOME/theos/bin:$PATH" >> $GITHUB_ENV
 
-      - name: Show output
-        run: ls -R output
+      - name: Build package
+        run: |
+          export THEOS=$HOME/theos
+          export PATH=$THEOS/bin:$PATH
+          make package || true
 
-      - name: Upload Artifact
+      - name: Prepare folders
+        run: |
+          mkdir -p output/deb
+          mkdir -p output/dylib
+
+      - name: Collect deb files
+        run: |
+          find . -name "*.deb" -exec cp {} output/deb/ \; || true
+
+      - name: Extract dylib from deb
+        run: |
+          for deb in output/deb/*.deb; do
+            echo "Extracting $deb"
+            mkdir -p temp_extract
+            dpkg-deb -x "$deb" temp_extract
+
+            find temp_extract -name "*.dylib" -exec cp {} output/dylib/ \; || true
+            rm -rf temp_extract
+          done
+
+      - name: Show results
+        run: |
+          echo "=== DEB FILES ==="
+          ls -R output/deb || true
+
+          echo "=== DYLIB FILES ==="
+          ls -R output/dylib || true
+
+      - name: Upload dylib
         uses: actions/upload-artifact@v4
         with:
-          name: Moustache-build
-          path: output/
+          name: dylib-output
+          path: output/dylib
+
+      - name: Upload deb
+        uses: actions/upload-artifact@v4
+        with:
+          name: deb-output
+          path: output/deb
