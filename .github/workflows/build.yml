@@ -1,0 +1,31 @@
+name: Debug Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show files
+        run: ls -R
+
+      - name: Install basic tools
+        run: |
+          brew install make
+
+      - name: Try build
+        run: |
+          echo "Starting build..."
+          make || true
+
+      - name: Find outputs
+        run: |
+          echo "Searching for output..."
+          find . -type f | grep -E "dylib|deb|o|a" || true
