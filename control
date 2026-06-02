@@ -2,7 +2,7 @@ Package: com.moustache.tweak
 Name: Moustache
 Version: 1.0
 Architecture: iphoneos-arm64
-Description: Floating Menu Tweak
+Description: Simple working dylib tweak
 Maintainer: Moustache
 Author: Moustache
 Section: Tweaks
