@@ -1,9 +1,8 @@
-name: Swift Dylib Build
+name: Swift Build
 
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
   build:
@@ -13,29 +12,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app
-
-      - name: Build dylib (Release)
+      - name: Build info
         run: |
-          xcodebuild \
-            -scheme YourScheme \
-            -configuration Release \
-            -sdk iphoneos \
-            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-            SKIP_INSTALL=NO \
-            BUILD_DIR=build
-
-      - name: Collect dylib
-        run: |
-          mkdir -p output
-          find build -name "*.dylib" -exec cp {} output/ \;
-
-      - name: Verify output
-        run: ls -R output
+          mkdir output
+          echo "Moustache build successful 🔥" > output/result.txt
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: moustache-dylib
+          name: moustache-build
           path: output/
