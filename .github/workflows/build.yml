@@ -13,45 +13,46 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: |
+          brew install make dpkg perl
+
       - name: Install Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git $HOME/theos
           echo "THEOS=$HOME/theos" >> $GITHUB_ENV
-          echo "PATH=$HOME/theos/bin:$PATH" >> $GITHUB_ENV
+          echo "$HOME/theos/bin" >> $GITHUB_PATH
+
+      - name: Verify tools
+        run: |
+          which make || echo "make missing"
+          which dpkg-deb || echo "dpkg-deb missing"
 
       - name: Build package
         run: |
           export THEOS=$HOME/theos
-          export PATH=$THEOS/bin:$PATH
           make package || true
 
-      - name: Prepare folders
+      - name: Prepare output
         run: |
           mkdir -p output/deb
           mkdir -p output/dylib
 
-      - name: Collect deb files
+      - name: Collect deb
         run: |
           find . -name "*.deb" -exec cp {} output/deb/ \; || true
 
-      - name: Extract dylib from deb
+      - name: Extract dylib
         run: |
+          brew install dpkg
+
           for deb in output/deb/*.deb; do
-            echo "Extracting $deb"
-            mkdir -p temp_extract
-            dpkg-deb -x "$deb" temp_extract
+            mkdir -p tmp
+            dpkg-deb -x "$deb" tmp
 
-            find temp_extract -name "*.dylib" -exec cp {} output/dylib/ \; || true
-            rm -rf temp_extract
+            find tmp -name "*.dylib" -exec cp {} output/dylib/ \; || true
+            rm -rf tmp
           done
-
-      - name: Show results
-        run: |
-          echo "=== DEB FILES ==="
-          ls -R output/deb || true
-
-          echo "=== DYLIB FILES ==="
-          ls -R output/dylib || true
 
       - name: Upload dylib
         uses: actions/upload-artifact@v4
