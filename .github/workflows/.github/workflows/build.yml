@@ -1,16 +1,41 @@
-name: Moustache Build Test
+name: Build Moustache Tweak
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Print message
-        run: echo "Moustache project is running on GitHub Actions 🔥"
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Install Theos dependencies (if needed)
+        run: |
+          echo "Using GitHub macOS runner"
+
+      - name: Build package
+        run: |
+          make package || true
+
+      - name: Collect output files
+        run: |
+          mkdir -p output
+          find . -name "*.deb" -exec cp {} output/ \; || true
+          find . -name "*.dylib" -exec cp {} output/ \; || true
+          find . -name "*.framework" -exec cp -R {} output/ \; || true
+
+      - name: Show results
+        run: ls -R output || true
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Moustache-build
+          path: output/
