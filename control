@@ -1,9 +1,0 @@
-Package: com.moustache.tweak
-Name: Moustache
-Version: 1.0
-Architecture: iphoneos-arm64
-Description: Simple working dylib tweak
-Maintainer: Moustache
-Author: Moustache
-Section: Tweaks
-Depends: firmware (>= 14.0)
